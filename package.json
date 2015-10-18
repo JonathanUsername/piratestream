@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "inquirer": "^0.9.0",
-    "thepiratebay": "^0.2.4"
+    "thepiratebay": "^0.2.4",
+    "yargs": "^3.25.0"
   }
 }
