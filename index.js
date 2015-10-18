@@ -7,38 +7,41 @@ var tpb = require('thepiratebay'),
     args = require("yargs")
         .option("search", {
             alias: "s",
-            description: "pass search term directly"
+            description: "pass search term directly",
+            type: "string"
         })
         .option("all", {
             alias: "a",
-            description: "play all torrents"
+            description: "play all files in torrent in order",
+            type: "boolean"
         })
         .option("visualise", {
             alias: "v",
-            description: "play visualisation of music. Requires vsxu_player"
+            description: "play visualisation of music. Requires vsxu_player",
+            type: "boolean"
         })
         .option("night", {
             alias: "n",
-            description: "turns on nightaudio. Requires nightaudio"
+            description: "turns on nightaudio. Requires nightaudio",
+            type: "boolean"
+        })
+        .option("url", {
+            alias: "u",
+            description: "set Pirate Bay URL",
+            type: "string"
         })
         .help("help")
         .argv,
     visualise = false,
     night = false,
     play_all_torrents = false,
-    history;
+    history,
+    history_index;
 
+initHistory()
 
-try {
-    history = require("./piratestream_history.json")
-    if (!Array.isArray(history))
-        console.log("History file is corrupted. Replacing.");
-} 
-catch(e) {
-    history = []
-}
-
-var history_index = history.length - 1;
+if (args.url)
+    tpb.setUrl = args.url
 
 if (args.v)
     visualise = true;
@@ -70,8 +73,6 @@ function prompt_search(){
 
 function history_listen(prompt){
     var stdin = process.openStdin();
-    salt = prompt; 
-
     if (prompt){
         process.stdin.setRawMode(true);    
         stdin.on('keypress', history_lookup);
@@ -94,17 +95,29 @@ function history_listen(prompt){
                 history_index++
         }
     }
+}
 
+function initHistory(){
+    try {
+        history = require("./piratestream_history.json")
+        if (!Array.isArray(history))
+            throw "History file is corrupted. Replacing...";
+    } catch(e) {
+        if (e.code != "MODULE_NOT_FOUND")
+            console.log(e)
+        history = []
+    }
+
+    history_index = history.length - 1;
 }
 
 
 function search(name){
     waiting_for_search = true
-    var entry = {
+    history.push({
         "search": name,
         "date" : new Date()
-    }
-    history.push(entry)
+    })
     var out = JSON.stringify(history)
     fs.writeFile("piratestream_history.json", out, function(err){
         if (err) throw "Couldn't write history to file", err
