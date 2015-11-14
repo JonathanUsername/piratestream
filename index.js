@@ -38,6 +38,9 @@ var tpb = require('thepiratebay'),
     history,
     history_index;
 
+var history_path = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + "/.piratestream_history.json"
+var stdin = process.openStdin()
+
 initHistory()
 
 if (args.url)
@@ -65,18 +68,18 @@ function prompt_search(){
         name: "name",
         message: "What do you want to stream?",
     }], function(search_term) {
-        history_listen()
+        history_listen(false)
         search(search_term.name)
     })
     history_listen(prompt)
 }
 
 function history_listen(prompt){
-    var stdin = process.openStdin();
     if (prompt){
         process.stdin.setRawMode(true);    
         stdin.on('keypress', history_lookup);
     } else {
+        process.stdin.setRawMode(false);
         stdin.removeListener('keypress', history_lookup)
     }
 
@@ -84,12 +87,12 @@ function history_listen(prompt){
         var last_search = history[history_index]
         if (last_search === undefined)
             return "History index error"
-        if (key && key.name == 'up') {
+        if (key && key.name == 'up' && prompt.rl) {
             prompt.rl.line = history[history_index].search
             if (history_index > 0)
                 history_index--
         }
-        if (key && key.name == 'down') {
+        if (key && key.name == 'down' && prompt.rl) {
             prompt.rl.line = history[history_index].search
             if (history_index < history.length -1)
                 history_index++
@@ -99,7 +102,7 @@ function history_listen(prompt){
 
 function initHistory(){
     try {
-        history = require("./piratestream_history.json")
+        history = require(history_path)
         if (!Array.isArray(history))
             throw "History file is corrupted. Replacing...";
     } catch(e) {
@@ -111,17 +114,22 @@ function initHistory(){
     history_index = history.length - 1;
 }
 
-
-function search(name){
-    waiting_for_search = true
+function saveHistory(name){
     history.push({
         "search": name,
         "date" : new Date()
     })
     var out = JSON.stringify(history)
-    fs.writeFile("piratestream_history.json", out, function(err){
+    fs.writeFile(history_path, out, function(err){
         if (err) throw "Couldn't write history to file", err
     })
+
+}
+
+function search(name){
+    waiting_for_search = true
+    if (name)
+        saveHistory(name)
     searching()
     tpb.search(name, {
         category: '0',
