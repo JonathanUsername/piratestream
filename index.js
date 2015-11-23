@@ -41,6 +41,8 @@ var tpb = require('thepiratebay'),
 var history_path = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + "/.piratestream_history.json"
 var stdin = process.openStdin()
 
+tpb.setUrl('https://pirateproxy.sx');
+
 initHistory()
 
 if (args.url)
@@ -88,15 +90,24 @@ function history_listen(prompt){
         if (last_search === undefined)
             return "History index error"
         if (key && key.name == 'up' && prompt.rl) {
-            prompt.rl.line = history[history_index].search
+            // console.log(history_index, history)
+            // console.log(prompt.rl)
+            writeLine(history[history_index].search)
             if (history_index > 0)
                 history_index--
         }
         if (key && key.name == 'down' && prompt.rl) {
-            prompt.rl.line = history[history_index].search
-            if (history_index < history.length -1)
+            writeLine(history[history_index].search)
+            if (history_index < history.length - 1)
                 history_index++
+            else 
+                writeLine('')
         }
+    }
+
+    function writeLine(str){
+        prompt.rl.line = str
+        prompt.rl._events.keypress()
     }
 }
 
