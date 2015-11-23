@@ -7,7 +7,7 @@ var tpb = require('thepiratebay'),
     args = require("yargs")
         .option("search", {
             alias: "s",
-            description: "pass search term directly",
+            description: "pass search term parameter directly",
             type: "string"
         })
         .option("all", {
@@ -17,7 +17,7 @@ var tpb = require('thepiratebay'),
         })
         .option("visualise", {
             alias: "v",
-            description: "play visualisation of music. Requires vsxu_player",
+            description: "play visualisation of music. Requires vsxu_player and xrandr",
             type: "boolean"
         })
         .option("night", {
@@ -32,8 +32,6 @@ var tpb = require('thepiratebay'),
         })
         .help("help")
         .argv,
-    visualise = false,
-    night = false,
     play_all_torrents = false,
     history,
     history_index;
@@ -47,12 +45,6 @@ initHistory()
 
 if (args.url)
     tpb.setUrl = args.url
-
-if (args.v)
-    visualise = true;
-
-if (args.night)
-    night = true;
 
 if (args.all)
     play_all_torrents = true;
@@ -88,10 +80,8 @@ function history_listen(prompt){
     function history_lookup(chunk, key){
         var last_search = history[history_index]
         if (last_search === undefined)
-            return "History index error"
+            throw "History index error"
         if (key && key.name == 'up' && prompt.rl) {
-            // console.log(history_index, history)
-            // console.log(prompt.rl)
             writeLine(history[history_index].search)
             if (history_index > 0)
                 history_index--
@@ -107,7 +97,7 @@ function history_listen(prompt){
 
     function writeLine(str){
         prompt.rl.line = str
-        prompt.rl._events.keypress()
+        prompt.rl._events.keypress() // Fake a keypress to trigger read
     }
 }
 
@@ -207,7 +197,7 @@ function choose(results){
             process.on('SIGTERM', function(code, signal){
                 cleanup()
             })
-            if (visualise)
+            if (args.v)
                 start_visualisation();
         } else {
             console.log("No magnet link for", choice.name)
@@ -217,7 +207,7 @@ function choose(results){
 
 function cleanup(){
     process.stdout.write("\033[2J")
-    if (visualise)
+    if (args.v)
         child.exec("xrandr", ["--auto"]);
 }
 
@@ -225,7 +215,7 @@ function start_visualisation(){
     // Wait for VLC to start up
     setTimeout(function(){
         child.spawn("vsxu_player",["-f", "-s", "3286x1080"])
-        if (night)
+        if (args.night)
             child.exec("nightaudio", ["tv"])
     }, 6000)
 }
