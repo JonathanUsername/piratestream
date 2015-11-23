@@ -1,10 +1,9 @@
 # piratestream
-A command line interface for streaming from the Pirate Bay torrent lists and piping directly to VLC. Search for a torrent, select the one you want, 
-
+A command line interface for streaming from the Pirate Bay torrent lists and piping directly to VLC. Search for a torrent, select the one you want, watch it as it starts to stream directly, no waiting required.
 
 ![Like normal pirates, only in a stream](http://i.imgur.com/Y3osx95.png)
 
-it's like normal piracy, only with with streaming and pipes.
+#### It's like normal piracy, but for impatient people with decent bandwidth.
 
 Install with `npm install`
 
