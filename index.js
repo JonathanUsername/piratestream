@@ -32,6 +32,7 @@ var tpb = require('thepiratebay'),
         })
         .help("help")
         .argv,
+    maxHistorySize = 100,
     play_all_torrents = false,
     history,
     history_index;
@@ -78,20 +79,23 @@ function history_listen(prompt){
     }
 
     function history_lookup(chunk, key){
-        var last_search = history[history_index]
-        if (last_search === undefined)
-            throw "History index error"
+        var last_search = history[history_index],
+            ind = history_index - 1
         if (key && key.name == 'up' && prompt.rl) {
+            if (history_index == history.length)
+                history_index--
             writeLine(history[history_index].search)
             if (history_index > 0)
                 history_index--
         }
         if (key && key.name == 'down' && prompt.rl) {
-            writeLine(history[history_index].search)
-            if (history_index < history.length - 1)
-                history_index++
-            else 
+            if (history_index == history.length)
                 writeLine('')
+            else {
+                writeLine(history[history_index].search)
+                history_index++
+            }
+            // if (history_index < history.length - 1)
         }
     }
 
@@ -120,11 +124,12 @@ function saveHistory(name){
         "search": name,
         "date" : new Date()
     })
+    if (history > maxHistorySize)
+        history.shift()
     var out = JSON.stringify(history)
     fs.writeFile(history_path, out, function(err){
         if (err) throw "Couldn't write history to file", err
     })
-
 }
 
 function search(name){
