@@ -95,7 +95,6 @@ function history_listen(prompt){
                 writeLine(history[history_index].search)
                 history_index++
             }
-            // if (history_index < history.length - 1)
         }
     }
 
