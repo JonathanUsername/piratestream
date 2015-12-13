@@ -155,11 +155,12 @@ function searching(){
 }
 
 function choose(results){
+    waiting_for_search = false;
     if (results.length == 0){
         console.log("No results.")
-        start()
+        prompt_search()
+        return
     }
-    waiting_for_search = false;
     var choices = {};
     for (var i in results) choices[results[i].name] = results[i].magnetLink;
     inquirer.prompt([{
