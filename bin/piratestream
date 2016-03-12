@@ -181,8 +181,7 @@ function choose(results){
     }], function(choice){
         var magnet = choices[choice.name]
         if (magnet){
-            var cmdName = (process.platform === "win32" ? "peerflix.cmd" : "peerflix")
-            var peerflix = child.spawn(cmdName, [magnet, "-a", "--vlc", "-- --fullscreen"]),
+            var peerflix = child.spawn("peerflix", [magnet, "-a", "--vlc", "-- --fullscreen"]),
                 end = new RegExp(/and ?\d+ more/),
                 closed = false;
             peerflix.stdout.on('data', function (data) {
